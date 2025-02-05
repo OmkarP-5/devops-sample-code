@@ -2,40 +2,39 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Creating virtual environment and installing dependencies...'
+                echo 'Installing Python dependencies...'
+                sh '''
+                python3 -m pip install --upgrade pip  # Upgrade pip
+                pip3 install -r requirements.txt      # Install dependencies
+                '''
             }
         }
+
         stage('Test') {
             steps {
-                echo 'Running tests...'
+                echo 'Running unit tests...'
                 sh 'python3 -m unittest discover -s .'
             }
         }
+
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
+                echo 'Deploying the application...'
                 sh '''
                 mkdir -p ${WORKSPACE}/python-app-deploy
                 cp ${WORKSPACE}/app.py ${WORKSPACE}/python-app-deploy/
                 '''
             }
         }
+
         stage('Run Application') {
             steps {
-                echo 'Running application...'
+                echo 'Starting the application...'
                 sh '''
                 nohup python3 ${WORKSPACE}/python-app-deploy/app.py > ${WORKSPACE}/python-app-deploy/app.log 2>&1 &
                 echo $! > ${WORKSPACE}/python-app-deploy/app.pid
-                '''
-            }
-        }
-        stage('Test Application') {
-            steps {
-                echo 'Testing application...'
-                sh '''
-                python3 ${WORKSPACE}/test_app.py
                 '''
             }
         }
