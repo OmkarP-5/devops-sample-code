@@ -9,12 +9,14 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Set up Python Virtual Environment') {
             steps {
-                echo 'Installing Python dependencies globally...'
+                echo 'Setting up virtual environment and installing dependencies...'
                 sh '''
-                python3 -m pip install --upgrade pip  # Upgrade pip
-                pip3 install -r requirements.txt      # Install required dependencies
+                python3 -m venv venv           # Create a virtual environment
+                . venv/bin/activate            # Activate the virtual environment
+                python3 -m pip install --upgrade pip  # Upgrade pip inside the virtual environment
+                pip install -r requirements.txt        # Install dependencies
                 '''
             }
         }
@@ -23,6 +25,7 @@ pipeline {
             steps {
                 echo 'Running unit tests...'
                 sh '''
+                . venv/bin/activate  # Activate virtual environment before running tests
                 python3 -m unittest discover -s .  # Run tests
                 '''
             }
@@ -35,9 +38,6 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed. Check the logs for details.'
-        }
-        always {
-            echo 'Pipeline execution completed.'
         }
     }
 }
